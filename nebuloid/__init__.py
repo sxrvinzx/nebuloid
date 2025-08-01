@@ -1,2 +1,2 @@
 def hello():
-    return "Nebuloid is alive!"
+    return "Nebuloid is alive af!"
