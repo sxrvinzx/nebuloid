@@ -1,0 +1,6 @@
+import * as tools from '/utils_tools.js';
+
+{% for name in func_names %}
+window["{{ name }}"] = async (...args) => { const Response = await tools.api_send("data", { name: "{{ name }}", args: args }); return Response.status === "success" ? Response.result : (Response.message ?? "unknown error"); };
+{% endfor %}
+
