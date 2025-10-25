@@ -1,6 +1,6 @@
 [project]
 name = "nebuloid"
-version = "0.1.0"
+version = "1.0.5"
 description = "A modular Flask-based framework for rapid web app development."
 authors = [{ name="Sarvin", email="your@email.com" }]
 readme = "README.md"
