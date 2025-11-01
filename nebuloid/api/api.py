@@ -1,4 +1,3 @@
-from quart import make_response, jsonify
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -50,7 +49,12 @@ class NebuloidAPI:
             if (existing := await self.orm.get_key(session_id)) is not None:
                 aes_key = existing.key
             else:
-                response = await make_response(jsonify({"error": "invalid_session"}), 403)
+                if self.use_flask:
+                    from flask import jsonify, make_response
+                    response = make_response(jsonify({"error": "invalid_session"}), 403)
+                else:
+                    from quart import jsonify, make_response
+                    response = await make_response(jsonify({"error": "invalid_session"}), 403)
 
                 response.set_cookie(
                     "session_id",
@@ -70,7 +74,13 @@ class NebuloidAPI:
             data = aes_decrypt(aes_key, json.loads(content).get("data"))
 
             resp_data, resp_code =  await self.handle_raw(api_name, json.loads(data), session_id=session_id)
-            return await make_response(jsonify(aes_encrypt(aes_key, json.dumps(resp_data))), resp_code)
+            if self.use_flask:
+                from flask import jsonify, make_response
+                return make_response(jsonify(aes_encrypt(aes_key, json.dumps(resp_data))), resp_code)
+            else:
+                from quart import jsonify, make_response
+                return await make_response(jsonify(aes_encrypt(aes_key, json.dumps(resp_data))), resp_code)
+            
         data = json.loads(content).get("data")
         
         # Decrypt
@@ -96,7 +106,12 @@ class NebuloidAPI:
 
         resp_data = {'info': "com_ok", "session": session_id}
 
-        response = await make_response(jsonify(aes_encrypt(base64.b64decode(data['key']), json.dumps(resp_data))), 200)
+        if self.use_flask:
+            from flask import jsonify, make_response
+            response = make_response(jsonify(aes_encrypt(base64.b64decode(data['key']), json.dumps(resp_data))), 200)
+        else:
+            from quart import jsonify, make_response
+            response = await make_response(jsonify(aes_encrypt(base64.b64decode(data['key']), json.dumps(resp_data))), 200)
 
         response.set_cookie(
             "session_id",               # cookie name

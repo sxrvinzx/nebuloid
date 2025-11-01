@@ -1,4 +1,3 @@
-from quart import request, send_file, redirect
 import importlib.resources as pkg_resources
 import mimetypes, io, os
 from pathlib import Path
@@ -32,11 +31,15 @@ class NebuloidServer:
         @self.app.route("/", defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE"])
         @self.app.route("/<path:path>", methods=["GET", "POST", "PUT", "DELETE"])
         async def catch_all(path):
+            if self.use_flask:
+                from flask import request, redirect, send_file
+            else:
+                from quart import request, redirect, send_file
             url = request.path
             method = request.method
             cookies = request.cookies
             query = request.args
-            body = await request.get_data()
+            body = self.tools.ensure_sync(request.get_data())
 
             await self.plugins.hook("on_request", path=path, method=method, cookies=cookies, query=query, body=body)
 
@@ -55,30 +58,30 @@ class NebuloidServer:
                 file_path = os.path.normpath(os.path.join(self.base_dir, route_name, 'static', file_name)).replace("\\", "/")
                 with open(file_path,'rb') as f:
                     datas = io.BytesIO(f.read())
-                
-                return await send_file(datas, mimetype=mime_type)
+
+                return await self.tools.maybe_await(send_file(datas, mimetype=mime_type))
             elif url.startswith("/plugin_"): # /plugin_<method>/<file_id>
                 method, file_id = url[8:].split("/", 1)
                 file_name, file_path = self.manifest.get_file(file_id)
                 if not file_name or not file_path or not os.path.exists(file_path):
                     return {"error": "file_not_found"}, 404
                 if method == "download":
-                    return await send_file(
+                    return await self.tools.maybe_await(send_file(
                         file_path,
                         as_attachment=True,
                         attachment_filename=file_name,
                         conditional=True
-                    )
+                    ))
                 elif method == "view":
                     mime_type, _ = mimetypes.guess_type(file_name)
                     if not mime_type:
                         mime_type = "application/octet-stream"
 
-                    return await send_file(
+                    return await self.tools.maybe_await(send_file(
                         file_path,
                         mimetype=mime_type,
                         conditional=True
-                    )
+                    ))
                 else:
                     return {"error": "invalid_method"}, 400
             elif url.startswith("/utils_"):
@@ -99,7 +102,7 @@ class NebuloidServer:
                         datas = io.BytesIO(f.read())
                 else:
                     raise FileNotFoundError(f"{file_name} not found in nebuloid.utils or current folder")
-                return await send_file(datas, mimetype=mime_type)
+                return await self.tools.maybe_await(send_file(datas, mimetype=mime_type))
 
             user_id, user_access_data = await self.orm.get_user_access_data(session_id)
 
@@ -134,6 +137,7 @@ class NebuloidServer:
         await self.plugins.hook("before_gen_utils")
 
         await self.builder.gen_utils({'name':'portal.js', 'args':{'func_names': list(self.manifest.func_registry['portal'].keys())}})
+        print("portl data", self.manifest.func_registry)
 
         public_key = self.storage.file('public_key.pem', "rb")
         with public_key as f:

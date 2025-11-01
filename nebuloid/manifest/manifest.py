@@ -39,4 +39,6 @@ class NebuloidManifest:
 
         self.data.clear()
         self.data.update(manifest_data)
+
+        self.base_url = self.data.get("server", {}).get("base_url", None)
     

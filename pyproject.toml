@@ -1,15 +1,22 @@
 [project]
 name = "nebuloid"
 version = "1.0.5"
-description = "A modular Flask-based framework for rapid web app development."
+description = "A modular framework for rapid web app development."
 authors = [{ name="Sarvin", email="your@email.com" }]
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.8"
 dependencies = [
-    "quart",
-    "sqlalchemy>=2.0",
-    "werkzeug",
+    "quart>=0.19.6",            # async web framework (ASGI)
+    "flask[async]>=3.1.0",      # sync+async WSGI framework
+    "sqlalchemy[asyncio]>=2.0", # ORM with async support
+    "werkzeug>=3.0.0",          # required by flask
+    "bcrypt>=4.1.2",            # for password hashing
+    "PyYAML>=6.0.1",            # config/manifest parsing
+    "cryptography>=42.0.0",     # for key handling
+    "requests>=2.31.0",         # for REST data fetching
+    "hypercorn>=0.15.0",        # ASGI server for Quart (used in Nebuloid.run)
+    "aiofiles>=23.2.1",         # async file I/O if you add async file ops
 ]
 
 [project.urls]

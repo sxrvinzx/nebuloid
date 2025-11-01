@@ -18,10 +18,12 @@ class NebuloidExposeAPI:
         registry = self._registries.setdefault(registry_name, {})
         if func and inspect.isfunction(func):
             registry[func.__name__] = func
+            self.ready() # re-ready to update manifest
             return func
 
         def decorator(f):
             registry[f.__name__] = f
+            self.ready() # re-ready to update manifest
             return f
         return decorator
 
@@ -30,6 +32,6 @@ class NebuloidExposeAPI:
             self._registries[name] = {}
         return lambda func=None: self._register_decorator(name, func)
 
-    async def ready(self):
+    def ready(self):
         for name, registry in self._registries.items():
             self.manifest.func_registry[name] = registry
