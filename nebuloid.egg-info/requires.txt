@@ -1,0 +1,9 @@
+quart
+flask
+sqlalchemy>=2.0
+werkzeug
+bcrypt
+PyYAML
+cryptography
+aiomysql
+requests

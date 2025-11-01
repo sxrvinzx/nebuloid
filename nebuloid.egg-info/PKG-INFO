@@ -1,0 +1,33 @@
+Metadata-Version: 2.4
+Name: nebuloid
+Version: 1.0.5
+Summary: A modular framework for rapid web app development.
+Author-email: Sarvin <your@email.com>
+License: MIT
+Project-URL: Homepage, https://github.com/sxrvinzx/nebuloid
+Project-URL: Source, https://github.com/sxrvinzx/nebuloid
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: quart
+Requires-Dist: flask
+Requires-Dist: sqlalchemy>=2.0
+Requires-Dist: werkzeug
+Requires-Dist: bcrypt
+Requires-Dist: PyYAML
+Requires-Dist: cryptography
+Requires-Dist: aiomysql
+Requires-Dist: requests
+
+# Nebuloid
+Nebuloid is a batteries-included Flask framework for building modular web apps with minimal effort.
+It comes with built-in routing, session management, role-based dashboards, and dynamic UI support.
+
+## Installation
+```pip install nebuloid```
+## Usage
+
+```python
+from nebuloid import hello
+
+print(hello())
+```
